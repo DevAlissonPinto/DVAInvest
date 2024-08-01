@@ -8,7 +8,6 @@ O Sistema de Gestão de Investimentos é uma plataforma que permite que os usuá
 [Diego Ivan Mendes de Oliveira](https://github.com/diegoivanmendes)
 [Vinicius Roberto de Oliveira Santos](https://github.com/vroliveira)
 
-
 ## Repositories
 * ASP.NET CORE BLAZOR  [link](https://github.com/DevAlissonPinto/DVAInvest)
 * Teste de Interações de Lógicas de negócio, camadas de aplicação e banco de dados [link](https://github.com/DevAlissonPinto/DVAInvest/tree/master/DVAInvest.UnitTests)
@@ -35,3 +34,13 @@ Certifique-se de ter .NET Core 8 SDK instalado e VS 2022 community.
 1. Abra o terminal.
 2. Navegue até o diretório do projeto de teste (DVAInvest.Tests).
 3. Execute o seguinte comando: dotnet test
+
+## Entregaveis 
+Link do documento com as explicações da arquitetura
+https://docs.google.com/document/d/14ewJ4XPiJQg1P98wS5XBo99JNWBvMdHTgX6Fpo0Ylow/edit?usp=sharing
+
+Documento demonstrando o desenho da arquitetura escolhida. OK
+Testes sendo executados via pipeline. OK
+Documentação no README do repositório. OK
+
+
