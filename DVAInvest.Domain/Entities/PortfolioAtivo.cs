@@ -10,6 +10,7 @@ public class PortfolioAtivo : EntityBase
     public Ativo? Ativo { get; set; }
     public decimal Quantidade { get; set; }
 
+    protected PortfolioAtivo() { }
     public PortfolioAtivo(int portfolioId, Portfolio? portfolio, int ativoId, Ativo? ativo, decimal quantidade)
     {
         PortfolioId = portfolioId;

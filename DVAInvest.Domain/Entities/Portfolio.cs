@@ -12,6 +12,7 @@ public class Portfolio : EntityBase
     public string Descricao { get; set; }
     public ICollection<PortfolioAtivo>? portfolioAtivos { get; set; }
 
+    protected Portfolio() { }
     public Portfolio(int usuarioId, Usuario? usuario, string nome, string descricao)
     {
         UsuarioId = usuarioId;
