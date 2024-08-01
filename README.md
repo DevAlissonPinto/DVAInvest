@@ -11,7 +11,7 @@ O Sistema de Gestão de Investimentos é uma plataforma que permite que os usuá
 
 ## Repositories
 * ASP.NET CORE BLAZOR  [link](https://github.com/DevAlissonPinto/DVAInvest)
-* Teste de Interações de Lógicas de negócio, camadas de aplicação e banco de dados [link](https://github.com/DevAlissonPinto/DVAInvest/DVAInvest.UnitTests)
+* Teste de Interações de Lógicas de negócio, camadas de aplicação e banco de dados [link](https://github.com/DevAlissonPinto/DVAInvest/tree/master/DVAInvest.UnitTests)
 
 ## Development 
 
