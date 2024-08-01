@@ -1,0 +1,184 @@
+﻿@page "/SaldoMaterial/Index"
+@using DVAInvest.Domain.Enum
+@using DVAInvest.Domain.Interfaces.Application
+@using DVAInvest.Infra.Repository.Context
+@using DVAInvest.Web.Models
+@using AutoMapper
+@inject IMaterialApplication<DVAInvestContext> _materialApplication
+@inject IMovimentacaoEstoqueApplication<DVAInvestContext> _movimentacaoEstoqueApplication
+@inject IMapper _mapper
+
+@rendermode InteractiveServer
+
+<PageTitle>Siss Saúde - Saldo de Materiais</PageTitle>
+
+@if (isLoading)
+{
+    <div class="loading-message">Carregando...</div>
+}
+else
+{
+    <div class="pagetitle">
+        <h1>Saldo de Materiais</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-fill"></i></a></li>
+                <li class="breadcrumb-item"><a href="/">Almoxarifado</a></li>
+                <li class="breadcrumb-item active">Saldo de Materiais</li>
+            </ol>
+        </nav>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @ErrorMessage
+        </div>
+    }
+
+    <div class="card mt-4">
+        <div class="card-header">
+            Extrato de movimentações por material
+        </div>
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Material:</label>
+                    <InputSelect class="form-select" @bind-Value="selectedMaterialId">
+                        <option value="0">Selecione</option>
+                        @foreach (var material in Materiais)
+                        {
+                            <option value="@material.Id">@material.Nome</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-primary" @onclick="LoadMovimentacoes">
+                        <i class="bi bi-search"></i> Pesquisar
+                    </button>
+                </div>
+            </div>
+
+            <br />
+
+            @if (Movimentacoes.Any())
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Estoque</th>
+                            <th>Material</th>
+                            <th>Tipo</th>
+                            <th>Quantidade</th>
+                            <th>Preço</th>
+                            <th>Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var movimentacao in Movimentacoes)
+                        {
+                            <tr class="@(movimentacao.TipoMovimentacao == TipoMovimentacaoEnum.SAIDA ? "table-danger" : "")">
+                                <td>@movimentacao.DataMovimentacao.ToString("dd/MM/yyyy")</td>
+                                <td>@movimentacao.EstoqueNome</td>
+                                <td>@movimentacao.MaterialNome</td>
+                                <td>@movimentacao.TipoMovimentacao</td>
+                                <td>@(movimentacao.TipoMovimentacao == TipoMovimentacaoEnum.SAIDA ? "-" : "")@movimentacao.Quantidade</td>
+                                <td>@movimentacao.Preco.ToString("C")</td>
+                                <td>@movimentacao.SaldoCumulativo</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="alert alert-info">Nenhuma movimentação encontrada para o material selecionado.</div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private bool isLoading = true;
+    private string ErrorMessage { get; set; } = string.Empty;
+    private int selectedMaterialId { get; set; } = 0;
+    private List<MaterialViewModel> Materiais { get; set; } = new List<MaterialViewModel>();
+    private List<MovimentacaoSaldoViewModel> Movimentacoes { get; set; } = new List<MovimentacaoSaldoViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMateriais();
+        isLoading = false;
+    }
+
+    private async Task LoadMateriais()
+    {
+        try
+        {
+            var materiais = (await _materialApplication.GetAllAsync()).ToList();
+            Materiais = _mapper.Map<List<MaterialViewModel>>(materiais);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Erro ao carregar os materiais: " + ex.Message;
+        }
+    }
+
+    private async Task LoadMovimentacoes()
+    {
+        isLoading = true;
+        try
+        {
+            if (selectedMaterialId == 0)
+            {
+                Movimentacoes = new List<MovimentacaoSaldoViewModel>();
+            }
+            else
+            {
+                var movimentacoes = await _movimentacaoEstoqueApplication.GetAllAsync(
+                    m => m.MaterialId == selectedMaterialId,
+                    m => m.Estoque,
+                    m => m.Material
+                );
+
+                int saldoCumulativo = 0;
+
+                Movimentacoes = movimentacoes
+                    .OrderBy(m => m.DataMovimentacao)
+                    .Select(m =>
+                    {
+                        if (m.TipoMovimentacao == TipoMovimentacaoEnum.ENTRADA)
+                        {
+                            saldoCumulativo += m.Quantidade;
+                        }
+                        else if (m.TipoMovimentacao == TipoMovimentacaoEnum.SAIDA)
+                        {
+                            saldoCumulativo -= m.Quantidade;
+                        }
+
+                        return new MovimentacaoSaldoViewModel
+                            {
+                                DataMovimentacao = m.DataMovimentacao,
+                                EstoqueNome = m.Estoque.Nome,
+                                MaterialNome = m.Material.Nome,
+                                TipoMovimentacao = m.TipoMovimentacao,
+                                Quantidade = m.Quantidade,
+                                Preco = m.Preco ?? 0,
+                                SaldoCumulativo = saldoCumulativo
+                            };
+                    })
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Erro ao carregar as movimentações: " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

@@ -1,0 +1,152 @@
+﻿@page "/EntradaMaterial/Create"
+@using DVAInvest.Domain.Enum
+@using DVAInvest.Domain.Interfaces.Application
+@using DVAInvest.Infra.Repository.Context
+@using DVAInvest.Web.Models
+@using AutoMapper
+@inject IMovimentacaoEstoqueApplication<DVAInvestContext> _movimentacaoEstoqueApplication
+@inject IEstoqueApplication<DVAInvestContext> _estoqueApplication
+@inject IMaterialApplication<DVAInvestContext> _materialApplication
+@inject NavigationManager navManager
+@inject IMapper _mapper
+
+@rendermode InteractiveServer
+
+<PageTitle>Siss Saúde - Nova Entrada de Material</PageTitle>
+
+<div class="pagetitle">
+    <h1>Nova Entrada de Material</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-fill"></i></a></li>
+            <li class="breadcrumb-item"><a href="/">Almoxarifado</a></li>
+            <li class="breadcrumb-item"><a href="almoxarifado/entrada-material">Entrada de Material</a></li>
+            <li class="breadcrumb-item active">Nova Entrada</li>
+        </ol>
+    </nav>
+</div>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @ErrorMessage
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">Entrada de Material</div>
+    <div class="card-body">
+        <EditForm Model="@movimentacaoEstoqueViewModel" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Data Entrada:</label>
+                    <InputDate class="form-control" @bind-Value="movimentacaoEstoqueViewModel.DataMovimentacao" />
+                    <ValidationMessage For="@(() => movimentacaoEstoqueViewModel.DataMovimentacao)" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Estoque:</label>
+                    <InputSelect class="form-select" @bind-Value="movimentacaoEstoqueViewModel.EstoqueId">
+                        <option value="0">Selecione</option>
+                        @foreach (var estoque in Estoques)
+                        {
+                            <option value="@estoque.Id">@estoque.Nome</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => movimentacaoEstoqueViewModel.EstoqueId)" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Material:</label>
+                    <InputSelect class="form-select" @bind-Value="movimentacaoEstoqueViewModel.MaterialId">
+                        <option value="0">Selecione</option>
+                        @foreach (var material in Materiais)
+                        {
+                            <option value="@material.Id">@material.Nome</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => movimentacaoEstoqueViewModel.MaterialId)" />
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Quantidade:</label>
+                    <InputNumber class="form-control" @bind-Value="movimentacaoEstoqueViewModel.Quantidade" />
+                    <ValidationMessage For="@(() => movimentacaoEstoqueViewModel.Quantidade)" />
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Preço:</label>
+                    <InputNumber class="form-control" @bind-Value="movimentacaoEstoqueViewModel.Preco" />
+                    <ValidationMessage For="@(() => movimentacaoEstoqueViewModel.Preco)" />
+                </div>
+            </div>
+            <br />
+            <div class="d-flex flex-row-reverse bd-highlight">
+                <div class="p-2 bd-highlight">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-arrow-right-circle"></i> Salvar
+                    </button>
+                </div>
+
+                <div class="p-2 bd-highlight">
+                    <a href="/almoxarifado/entrada-material" class="btn btn-secondary">
+                        <i class="bi bi-dash-circle"></i> Cancelar
+                    </a>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private MovimentacaoEstoqueViewModel movimentacaoEstoqueViewModel = new MovimentacaoEstoqueViewModel();
+    private string ErrorMessage = string.Empty;
+    private List<EstoqueViewModel> Estoques = new List<EstoqueViewModel>();
+    private List<MaterialViewModel> Materiais = new List<MaterialViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        movimentacaoEstoqueViewModel = new MovimentacaoEstoqueViewModel();
+        movimentacaoEstoqueViewModel.DataMovimentacao = DateTime.Now;
+        await LoadEstoques();
+        await LoadMateriais();
+    }
+
+    private async Task LoadEstoques()
+    {
+        try
+        {
+            var estoques = (await _estoqueApplication.GetAllAsync()).ToList();
+            Estoques = _mapper.Map<List<EstoqueViewModel>>(estoques);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Erro ao carregar os estoques: " + ex.Message;
+        }
+    }
+
+    private async Task LoadMateriais()
+    {
+        try
+        {
+            var materiais = (await _materialApplication.GetAllAsync()).ToList();
+            Materiais = _mapper.Map<List<MaterialViewModel>>(materiais);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Erro ao carregar os materiais: " + ex.Message;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            ErrorMessage = string.Empty;
+            movimentacaoEstoqueViewModel.TipoMovimentacao = TipoMovimentacaoEnum.ENTRADA;
+            await _movimentacaoEstoqueApplication.SaveAsync(movimentacaoEstoqueViewModel.ToModel());
+            navManager.NavigateTo("/EntradaMaterial/Index");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Erro ao salvar a entrada de material: " + ex.Message;
+        }
+    }
+}

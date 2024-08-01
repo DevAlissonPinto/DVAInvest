@@ -1,0 +1,44 @@
+﻿<aside id="sidebar" class="sidebar">
+
+    <ul class="sidebar-nav" id="sidebar-nav">
+
+        <!-- Dashboard Almoxarifado Nav -->
+        <li class="nav-item">
+            <a asp-controller="Dashboard" asp-action="Index" class="nav-link">
+                <i class="ri ri-dashboard-line"></i>
+                <span>DVA Investing</span>
+            </a>
+        </li><!-- End Dashboard Almoxarifado Nav -->
+
+        <!-- Configuração Nav -->
+        <li class="nav-item">
+            <a class="nav-link collapsed" data-bs-toggle="collapse" href="#configuracao-nav">
+                <i class="bi bi-gear"></i><span>Configuração</span><i class="bi bi-chevron-down ms-auto"></i>
+            </a>
+            <ul id="configuracao-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
+                <li>
+                    <NavLink href="Usuario/Index">
+                        <i class="bi bi-person"></i><span>Usuários</span>
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink href="Portfolio/Index">
+                        <i class="bi bi-briefcase"></i><span>Portfólios</span>
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink href="Ativos/Index">
+                        <i class="bi bi-graph-up"></i><span>Ativos</span>
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink href="Cotacao/Index">
+                        <i class="bi bi-currency-exchange"></i><span>Cotações</span>
+                    </NavLink>
+                </li>
+            </ul>
+        </li><!-- End Configuração Nav -->
+
+    </ul>
+
+</aside>

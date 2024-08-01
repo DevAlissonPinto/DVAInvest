@@ -1,0 +1,146 @@
+﻿@page "/"
+
+<PageTitle>Projeto de Arquitetura Limpa em .NET com C# - FIAP - TECH CHALLENGE - FASE 4</PageTitle>
+
+<div class="card">
+
+    <div class="card-header">
+
+        <h1>Projeto de Arquitetura Limpa em .NET com C# - FIAP - TECH CHALLENGE - FASE 4</h1>
+    </div>
+
+    <div class="card-body">
+
+
+        <h2>Participantes</h2>
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <img src="/img/diego.jpeg" class="img-thumbnail" style="width: 150px; height: 200px;" />
+                <p><strong>Diego Ivan Mendes de Oliveira</strong></p>
+            </div>
+            <div class="col-md-4 text-center">
+                <img src="/img/vinicius.jpg" class="img-thumbnail" style="width: 150px; height: 200px;" />
+                <p><strong>Vinicius Roberto dos Santos</strong></p>
+            </div>
+            <div class="col-md-4 text-center">
+                <img src="/img/alisson.jpeg" class="img-thumbnail" style="width: 150px; height: 200px;" />
+                <p><strong>Alisson da Silva Pinto</strong></p>
+            </div>
+        </div>
+
+        <h3>1. Escolha do Tema</h3>
+        <p><strong>Tema:</strong> Sistema de gestão de estoque.</p>
+
+        <h3>2. Levantamento de Requisitos e Critérios de Aceite</h3>
+        <ul>
+            <li>Funcionalidades esperadas <a href="LINK">LINK</a></li>
+            <li>Restrições técnicas</li>
+            <li>Critérios de aceite</li>
+        </ul>
+        <p>Localização: Pode estar no README do projeto ou em um documento separado.</p>
+
+        <h3>3. Desenvolvimento da Aplicação</h3>
+        <ul>
+            <li>Domínio <a href="LINK">LINK</a></li>
+            <li>Aplicação</li>
+            <li>Infraestrutura</li>
+            <li>Apresentação/UI</li>
+        </ul>
+        <p>Objetivos: Escalabilidade, manutenibilidade, facilidade de testes.</p>
+
+        <h3>4. Persistência de Dados</h3>
+        <p>Escolher e justificar o banco de dados.</p>
+        <p>Opções: Relacional ou NoSQL.</p>
+        <p><strong>Justificativa:</strong> Nossa escolha por um banco de dados relacional pelas seguintes razões:</p>
+        <ul>
+            <li>Compatibilidade com Entity Framework: O Entity Framework é um ORM robusto para .NET e funciona muito bem com bancos de dados relacionais como o SQL Server.</li>
+            <li>Suporte a Transações: Bancos de dados relacionais como o SQL Server oferecem suporte completo a transações, o que é essencial para manter a integridade dos dados em operações complexas.</li>
+            <li>Relatórios e Análise: O SQL Server tem poderosas ferramentas de relatório e análise, como o SQL Server Reporting Services (SSRS) e SQL Server Analysis Services (SSAS).</li>
+            <li>Integridade Referencial: Bancos de dados relacionais garantem integridade referencial, que é crucial para manter relações consistentes entre entidades, como entre Material, Estoque, e MovimentacaoEstoque.</li>
+            <li>Escalabilidade e Desempenho: O SQL Server é escalável e pode ser otimizado para desempenho com índices, particionamento de tabelas e outras técnicas avançadas.</li>
+        </ul>
+        <p><strong>Não escolhemos um banco NoSQL pelas seguintes razões:</strong></p>
+        <ul>
+            <li>Falta de Relacionamentos Complexos: Bancos de dados NoSQL não são ideais para dados altamente relacionados e podem requerer mais esforço para modelar esses relacionamentos de forma eficiente.</li>
+            <li>Consistência Eventual: Muitos bancos NoSQL sacrificam consistência para melhorar a disponibilidade e a escalabilidade, o que pode ser um problema para sistemas que exigem consistência transacional.</li>
+            <li>Ferramentas de Relatórios e Análise: Embora existam ferramentas para bancos NoSQL, elas não são tão maduras ou integradas quanto as ferramentas disponíveis para SQL Server.</li>
+        </ul>
+
+        <h3>5. Testes</h3>
+        <p><strong>Passo:</strong> Desenvolver testes unitários e de integração.</p>
+        <p><strong>Cobertura:</strong></p>
+        <ul>
+            <li>Lógicas de negócio críticas</li>
+            <li>Integração com o banco de dados</li>
+            <li>Interações entre camadas de aplicação</li>
+        </ul>
+        <p><strong>Objetivo:</strong> Cobrir as principais regras de negócio.</p>
+        <p><strong>Ação:</strong> Escrever e executar testes, documentar resultados.</p>
+
+        <h3>Entregáveis</h3>
+
+        <h4>Link do GitHub</h4>
+        <p><strong>Conteúdo:</strong> Projeto completo, README com instruções para build e execução, descrição do tema, requisitos atendidos e arquitetura.</p>
+        <p><strong>Ação:</strong> Criar e manter o repositório atualizado.</p>
+        <p><strong>Link:</strong> <a href="https://github.com/DevAlissonPinto/DVAInvest">https://github.com/DevAlissonPinto/DVAInvest</a></p>
+
+        <h4>Documentação</h4>
+        <p><strong>Conteúdo:</strong> Levantamento de requisitos e critérios de aceite.</p>
+        <p><strong>Localização:</strong> Dentro do repositório.</p>
+        <p><strong>Ação:</strong> Manter a documentação organizada e acessível.</p>
+
+        <h4>Vídeo de Apresentação</h4>
+        <p><strong>Conteúdo:</strong></p>
+        <ul>
+            <li>Levantamento de requisitos (documentos e proposta)</li>
+            <li>Arquitetura do projeto e justificativa do banco de dados</li>
+            <li>Cobertura de testes focando nas regras de domínio</li>
+        </ul>
+        <p><strong>Plataforma:</strong> YouTube.</p>
+
+        <h3>Roteiro para o Vídeo</h3>
+        <ol>
+            <li>
+                Introdução:
+                <ul>
+                    <li>Apresentação do time</li>
+                    <li>Tema do projeto</li>
+                </ul>
+            </li>
+            <li>
+                Levantamento de Requisitos:
+                <ul>
+                    <li>Explicação dos documentos e proposta</li>
+                </ul>
+            </li>
+            <li>
+                Arquitetura do Projeto:
+                <ul>
+                    <li>Estrutura da aplicação</li>
+                    <li>Justificativa da escolha do banco de dados</li>
+                </ul>
+            </li>
+            <li>
+                Cobertura de Testes:
+                <ul>
+                    <li>Demonstração dos testes realizados</li>
+                    <li>Foco nas regras de domínio</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>Checklist</h3>
+        <ul>
+            <li>[x] Tema do projeto definido</li>
+            <li>[ ] Documento de requisitos criado e revisado</li>
+            <li>[ ] Estrutura do projeto definida</li>
+            <li>[ ] Banco de dados escolhido e justificado</li>
+            <li>[ ] Testes unitários e de integração desenvolvidos</li>
+            <li>[ ] Repositório do GitHub criado e atualizado</li>
+            <li>[ ] Documentação organizada no repositório</li>
+            <li>[ ] Vídeo de apresentação gravado e publicado no YouTube</li>
+        </ul>
+
+    </div>
+
+</div>

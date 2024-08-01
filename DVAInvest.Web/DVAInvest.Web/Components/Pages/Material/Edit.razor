@@ -1,0 +1,123 @@
+﻿@page "/material/editar/{Id:int}"
+@using DVAInvest.Domain.Entities
+@using DVAInvest.Domain.Interfaces.Application
+@using DVAInvest.Infra.Repository.Context
+@using DVAInvest.Web.Models
+@using AutoMapper
+
+@inject NavigationManager navManager
+@inject IMaterialApplication<DVAInvestContext> _MaterialApplication
+@inject IMapper _mapper
+
+@rendermode InteractiveServer
+
+<PageTitle>Siss Saúde - Cadastro de Material</PageTitle>
+
+<div class="pagetitle">
+    <h1>Cadastro de Material</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-fill"></i></a></li>
+            <li class="breadcrumb-item"><a href="material">Material</a></li>
+            <li class="breadcrumb-item active">Cadastro</li>
+        </ol>
+    </nav>
+</div>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @ErrorMessage
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">Informações do Material</div>
+    <div class="card-body">
+
+
+        <EditForm Model="@Model" OnValidSubmit="OnValidSubmitAsync">
+            <DataAnnotationsValidator />
+            <div class="row">
+
+                <div class="col-md-4 pb-2">
+                    <label class="form-label">Nome do Material:</label>
+                    <InputText @bind-Value="Model.Nome" class="form-control" />
+                    <ValidationMessage For="@(() => Model.Nome)" />
+                </div>
+
+                <div class="col-md-4 pb-2">
+                    <label class="form-label">Código do Material:</label>
+                    <InputText @bind-Value="Model.Codigo" class="form-control" />
+                    <ValidationMessage For="@(() => Model.Codigo)" />
+                </div>
+            </div>
+            <div class="d-flex flex-row-reverse bd-highlight">
+                <div class="p-2 bd-highlight">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-arrow-right-circle"></i> Salvar
+                    </button>
+                </div>
+
+                <div class="p-2 bd-highlight">
+                    <a href="Material" class="btn btn-secondary">
+                        <i class="bi bi-dash-circle"></i> Cancelar
+                    </a>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+
+
+@code {
+    private MaterialViewModel Model { get; set; } = new();
+    private Material Material { get; set; }
+    private string ErrorMessage { get; set; } = string.Empty;
+    private bool isConfirming = false;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        isConfirming = false;
+        ErrorMessage = string.Empty;
+
+        Material = await _MaterialApplication.GetAsync(Id);
+        Model = _mapper.Map<MaterialViewModel>(Material);
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        try
+        {
+            isConfirming = true;
+            ErrorMessage = string.Empty;
+            StateHasChanged();
+
+            Material.Nome = Model.Nome;
+            Material.Codigo = Model.Codigo;
+            await _MaterialApplication.UpdateAsync(Material);
+
+            navManager.NavigateTo("/Material");
+        }
+        catch (Exception ex)
+        {
+            isConfirming = false;
+            Console.WriteLine($"Ocorreu um erro: {ex.Message}");
+            ErrorHandling("Failed to process the data. Please try again. " + ex.Message);
+        }
+    }
+
+    private void ErrorHandling(string message, Exception? innerException = default)
+    {
+        if (innerException != null)
+        {
+            message += $" Inner Exception: {innerException.Message}";
+        }
+        ErrorMessage = message;
+        InvokeAsync(StateHasChanged);
+    }
+}

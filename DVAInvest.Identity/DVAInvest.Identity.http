@@ -1,0 +1,6 @@
+@DVAInvest.Identity_HostAddress = http://localhost:5111
+
+GET {{DVAInvest.Identity_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

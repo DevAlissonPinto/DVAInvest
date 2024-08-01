@@ -1,0 +1,99 @@
+﻿@page "/SaidaMaterial/Index"
+@using DVAInvest.Domain.Entities
+@using DVAInvest.Domain.Enum
+@using DVAInvest.Domain.Interfaces.Application
+@using DVAInvest.Infra.Repository.Context
+@using DVAInvest.Web.Models
+@using AutoMapper
+@inject IMovimentacaoEstoqueApplication<DVAInvestContext> _movimentacaoEstoqueApplication
+@inject IMapper _mapper
+
+<PageTitle>Siss Saúde - Saída de Material</PageTitle>
+
+<div class="pagetitle">
+    <h1>Saída de Material</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-fill"></i></a></li>
+            <li class="breadcrumb-item"><a href="/">Almoxarifado</a></li>
+            <li class="breadcrumb-item active">Saída de Material</li>
+        </ol>
+    </nav>
+</div>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @ErrorMessage
+    </div>
+}
+
+<div class="card mt-4">
+    <div class="card-header">Resultado da Pesquisa</div>
+    <div class="card-body">
+        @if (Movimentacoes.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Data da Movimentação</th>
+                        <th>Almoxarifado</th>
+                        <th>Material</th>
+                        <th>Quantidade</th>
+                        <th>Preço</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var movimentacao in Movimentacoes)
+                    {
+                        <tr>
+                            <td>@movimentacao.DataMovimentacao.ToString("dd/MM/yyyy")</td>
+                            <td>@movimentacao.Estoque?.Nome</td>
+                            <td>@movimentacao.Material?.Nome</td>
+                            <td>@movimentacao.Quantidade</td>
+                            <td>@movimentacao.Preco.ToString("C")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="alert alert-info">Nenhuma movimentação encontrada.</div>
+        }
+    </div>
+</div>
+
+<div class="text-end mt-4">
+    <a href="SaidaMaterial/Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nova Saída
+    </a>
+</div>
+
+@code {
+    private string ErrorMessage { get; set; } = string.Empty;
+    private List<MovimentacaoEstoqueViewModel> Movimentacoes { get; set; } = new List<MovimentacaoEstoqueViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMovimentacoes();
+    }
+
+    private async Task LoadMovimentacoes()
+    {
+        try
+        {
+            var movimentacoes = await _movimentacaoEstoqueApplication.GetAllAsync(
+                m => m.TipoMovimentacao == TipoMovimentacaoEnum.SAIDA,
+                x => x.Estoque,
+                x => x.Material
+            );
+
+            Movimentacoes = movimentacoes.Select(m => _mapper.Map<MovimentacaoEstoqueViewModel>(m)).ToList();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Erro ao carregar as movimentações: " + ex.Message;
+        }
+    }
+}

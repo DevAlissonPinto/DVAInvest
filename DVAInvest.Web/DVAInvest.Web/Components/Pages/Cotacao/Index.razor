@@ -1,0 +1,174 @@
+﻿@page "/Cotacao/Index"
+@using DVAInvest.Domain.Interfaces.Application
+@using DVAInvest.Infra.Repository.Context
+@using DVAInvest.Web.Models
+@using Newtonsoft.Json
+@inject IBrapiApplication _brapiApplication
+@inject IAtivoApplication<DVAInvestContext> _ativoApplication   
+@implements IDisposable
+
+@rendermode InteractiveServer
+
+<div class="pagetitle">
+    <h1>Listagem de Ativos</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-fill"></i></a></li>
+            <li class="breadcrumb-item active">Painel de Cotações</li>
+        </ol>
+    </nav>
+</div>
+
+<style>
+    .text-danger {
+        color: red;
+    }
+
+    .text-light {
+        color: white;
+    }
+</style>
+
+@if (Cotacao != null && Cotacao.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome Curto</th>
+                <th>Nome Completo</th>
+                <th>Preço Atual</th>
+                <th>Variação</th>
+                <th>Variação Percentual</th>
+                <th>Data e Hora</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cotacao in Cotacao)
+            {
+                <tr>
+                    <td>@cotacao.ShortName</td>
+                    <td>@cotacao.LongName</td>
+                    <td>@cotacao.RegularMarketPrice.ToString("C")</td>
+                    <td class="@GetChangeClass(cotacao.RegularMarketChange)">@cotacao.RegularMarketChange.ToString("C")</td>
+                    <td class="@GetChangeClass(cotacao.RegularMarketChange)">
+                        @((cotacao.RegularMarketChangePercent).ToString("F2")) %
+                    </td>
+                    <td>@cotacao.RegularMarketTime.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p>Última atualização: @ultimaAtualizacao</p>
+    <p class="small fst-italic">Próxima atualização em: @tempoRestante segundos</p>
+}
+else
+{
+    <p>Carregando...</p>
+}
+
+@code {
+    private List<ResultadoViewModel> Cotacao { get; set; }
+    private string retornoJson { get; set; }
+    private Timer _updateTimer;
+    private Timer _countdownTimer;
+    private string ultimaAtualizacao;
+    private int tempoRestante = 20;
+
+    private string[] principaisAcoes;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var ativos = await _ativoApplication.GetAllAsync();
+
+        // Filtra os ativos do tipo Ação e obtém os códigos
+        principaisAcoes = ativos
+            .Select(a => a.Codigo)
+            .ToArray();
+
+        await FetchData();
+
+        // Configura o temporizador para atualizar a cada 20 segundos
+        _updateTimer = new Timer(async _ => await InvokeAsync(FetchData), null, TimeSpan.Zero, TimeSpan.FromSeconds(20));
+
+        // Configura o temporizador para o contador de atualização
+        _countdownTimer = new Timer(Countdown, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+    }
+
+    private async Task FetchData()
+    {
+        var cotacoes = new List<ResultadoViewModel>();
+
+        foreach (var acao in principaisAcoes)
+        {
+            var response = await _brapiApplication.ObterCotacaoAcaoAsync(acao);
+
+            // Serializa a resposta para uma string JSON para fins de log e visualização
+            retornoJson = JsonConvert.SerializeObject(response, Formatting.Indented);
+
+            // Log da resposta no console (para depuração)
+            Console.WriteLine(retornoJson);
+            System.Diagnostics.Debug.WriteLine(retornoJson);
+
+            // Mapeia a resposta para a ViewModel
+            if (response?.Results != null)
+            {
+                var resultados = response.Results.Select(r => new ResultadoViewModel
+                    {
+                        Symbol = r.Symbol,
+                        ShortName = r.ShortName,
+                        LongName = r.LongName,
+                        RegularMarketChange = r.RegularMarketChange,
+                        RegularMarketChangePercent = r.RegularMarketChangePercent,
+                        RegularMarketTime = r.RegularMarketTime,
+                        RegularMarketPrice = r.RegularMarketPrice,
+                        RegularMarketDayHigh = r.RegularMarketDayHigh,
+                        RegularMarketDayRange = r.RegularMarketDayRange,
+                        RegularMarketDayLow = r.RegularMarketDayLow,
+                        RegularMarketVolume = r.RegularMarketVolume,
+                        RegularMarketPreviousClose = r.RegularMarketPreviousClose,
+                        RegularMarketOpen = r.RegularMarketOpen,
+                        FiftyTwoWeekRange = r.FiftyTwoWeekRange,
+                        FiftyTwoWeekLow = r.FiftyTwoWeekLow,
+                        FiftyTwoWeekHigh = r.FiftyTwoWeekHigh,
+                        PriceEarnings = r.PriceEarnings,
+                        EarningsPerShare = r.EarningsPerShare,
+                        LogoUrl = r.LogoUrl
+                    });
+
+                cotacoes.AddRange(resultados);
+            }
+        }
+
+        Cotacao = cotacoes;
+
+        // Atualiza a variável de última atualização
+        ultimaAtualizacao = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+
+        // Reinicia o contador de tempo restante
+        tempoRestante = 20;
+
+        // Atualiza a interface do usuário
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void Countdown(object state)
+    {
+        if (tempoRestante > 0)
+        {
+            tempoRestante--;
+        }
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string GetChangeClass(decimal change)
+    {
+        return change < 0 ? "text-danger" : "text-light";
+    }
+
+    public void Dispose()
+    {
+        _updateTimer?.Dispose();
+        _countdownTimer?.Dispose();
+    }
+}

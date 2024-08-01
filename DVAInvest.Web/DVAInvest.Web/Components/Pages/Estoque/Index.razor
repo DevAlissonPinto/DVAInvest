@@ -1,0 +1,161 @@
+﻿@page "/almoxarifado"
+@using DVAInvest.Domain.Entities
+@using DVAInvest.Domain.Interfaces.Application
+@using DVAInvest.Infra.Repository.Context
+@using DVAInvest.Web.Models
+@using AutoMapper
+
+@inject NavigationManager navManager
+@inject IEstoqueApplication<DVAInvestContext> _almoxarifadoApplication
+@inject IMapper _mapper
+
+@rendermode InteractiveServer
+
+<PageTitle>Siss Saúde - Almoxarifados</PageTitle>
+
+<div class="pagetitle">
+    <h1>Listagem de Almoxarifados</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/"><i class="bi bi-house-fill"></i></a></li>
+            <li class="breadcrumb-item active">Almoxarifado</li>
+        </ol>
+    </nav>
+</div>
+
+@if (showConfirmation)
+{
+    <div class="modal show" tabindex="-1" style="display:block; background-color: rgba(0,0,0,0.5);" @onclick="CloseModal">
+        <div class="modal-dialog">
+            <div class="modal-content" @onclick:stopPropagation>
+                <div class="modal-header">
+                    <h5 class="modal-title">@Title</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>@Body</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">Almoxarifados Cadastrados</div>
+    <div class="card-body">
+        @if (Almoxarifados == null || Almoxarifados.Count == 0)
+        {
+            <p><em>@Mensagem</em></p>
+        }
+        else
+        {
+            <!-- Tabela de cotas -->
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="col-2">Id</th>
+                        <th class="col-2">Nome Almoxarifado</th>
+                        <th class="col-2 text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var _almoxarifado in Almoxarifados)
+                    {
+                        <tr>
+                            <td>@_almoxarifado.Id.ToString()</td>
+                            <td>@_almoxarifado.Nome</td>
+                            <td class="text-center">
+                                <!-- Botão de edição com ícone, que navega para a página de edição passando o Id -->
+                                <NavLink class="btn btn-primary btn-md" href="@($"/almoxarifado/editar/{_almoxarifado.Id}")">
+                                    <i class="bi bi-pencil-square"></i>
+                                </NavLink>
+                                <!-- Botão de exclusão com ícone, que mostra a confirmação de exclusão -->
+                                <button class="btn btn-danger btn-md" @onclick="() => ShowDeleteConfirmation(_almoxarifado.Id)">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<div class="text-end mt-4">
+    <a href="almoxarifado/cadastro" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Cadastrar Novo Almoxarifado
+    </a>
+</div>
+
+@code {
+    private List<EstoqueViewModel> Almoxarifados { get; set; } = new();
+    public string Mensagem { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Mensagem = "Carregando...";
+            
+            MapperMaterial(await CarregarAlmoxarifados());
+
+            if (Almoxarifados == null || Almoxarifados.Count == 0)
+                Mensagem = "Não há almoxarifado registrado no sistema.";
+        }
+        catch (Exception ex)
+        {
+            Mensagem = "Não há almoxarifado registrado no sistema.";
+            Console.WriteLine($"Erro ao carregar os almoxarifados: {ex.Message}");
+        }
+    }
+
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Body { get; set; } = string.Empty;
+
+    private int selectedAlmoxarifadoId;
+    private bool showConfirmation = false;
+
+    private void ShowDeleteConfirmation(int almoxarifadoId)
+    {
+        selectedAlmoxarifadoId = almoxarifadoId;
+        Title = "Confirmar Exclusão";
+        Body = "Tem certeza de que deseja excluir este almoxarifado?";
+        showConfirmation = true;
+    }
+
+    private void CloseModal()
+    {
+        showConfirmation = false;
+        StateHasChanged(); // Força a atualização do estado da UI
+    }
+
+    private async Task ConfirmDelete()
+    {
+        try
+        {
+            await _almoxarifadoApplication.DeleteAsync(selectedAlmoxarifadoId);
+
+            MapperMaterial(await CarregarAlmoxarifados());
+
+            if (Almoxarifados == null || Almoxarifados.Count == 0)
+                Mensagem = "Não há almoxarifado registrado no sistema.";
+
+            CloseModal();
+        }
+        catch (Exception ex)
+        {
+            Mensagem = "Ocorreu um erro ao deletar o almoxarifado.";
+            Console.WriteLine($"Ocorreu um erro ao deletar o almoxarifado: {ex.Message}");
+        }
+    }
+
+    private async Task<IEnumerable<Estoque>> CarregarAlmoxarifados() => await _almoxarifadoApplication.GetAllAsync(x => x.Ativo);
+
+    private void MapperMaterial(IEnumerable<Estoque> almoxarifados) => Almoxarifados = _mapper.Map<List<EstoqueViewModel>>(almoxarifados);
+}
